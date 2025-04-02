@@ -43,6 +43,58 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// MCP Command Handlers
+const mcpHandlers = {
+    'server-sequential-thinking': async (data) => {
+        return executeMCPCommand('server-sequential-thinking', {
+            ...data,
+            key: mcpConfig.mcpServers['server-sequential-thinking'].args[5]
+        });
+    },
+    'perplexity-deep-research': async (data) => {
+        return executeMCPCommand('perplexity-deep-research', {
+            ...data,
+            key: mcpConfig.mcpServers['perplexity-deep-research'].args[5]
+        });
+    },
+    'github': async (data) => {
+        return executeMCPCommand('github', {
+            ...data,
+            key: mcpConfig.mcpServers['github'].args[5]
+        });
+    },
+    'claude-code-mcp': async (data) => {
+        return executeMCPCommand('claude-code-mcp', {
+            ...data,
+            config: mcpConfig.mcpServers['claude-code-mcp'].args[5]
+        });
+    },
+    'n8n-workflow-builder': async (data) => {
+        return executeMCPCommand('n8n-workflow-builder', {
+            ...data,
+            key: mcpConfig.mcpServers['n8n-workflow-builder'].args[5]
+        });
+    },
+    'fetch-mcp': async (data) => {
+        return executeMCPCommand('fetch-mcp', {
+            ...data,
+            key: mcpConfig.mcpServers['fetch-mcp'].args[5]
+        });
+    },
+    'smart-thinking': async (data) => {
+        return executeMCPCommand('smart-thinking', {
+            ...data,
+            key: mcpConfig.mcpServers['smart-thinking'].args[5]
+        });
+    },
+    'react-mcp': async (data) => {
+        return executeMCPCommand('react-mcp', {
+            ...data,
+            config: mcpConfig.mcpServers['react-mcp'].args[5]
+        });
+    }
+};
+
 // Function to execute MCP command
 const executeMCPCommand = (serverName, data) => {
     return new Promise((resolve, reject) => {
@@ -59,6 +111,8 @@ const executeMCPCommand = (serverName, data) => {
         if (data) {
             args.push('--data', JSON.stringify(data));
         }
+
+        console.log(`Executing MCP command: ${command} ${args.join(' ')}`);
 
         const process = spawn(command, args);
 
@@ -112,8 +166,18 @@ app.post('/api/process', async (req, res) => {
                     return;
                 }
 
+                const handler = mcpHandlers[serverName];
+                if (!handler) {
+                    res.status(400).json({ 
+                        success: false, 
+                        message: `No handler found for server: ${serverName}`,
+                        domain: 'ammcpserver.vercel.app'
+                    });
+                    return;
+                }
+
                 try {
-                    const result = await executeMCPCommand(serverName, data);
+                    const result = await handler(data);
                     res.json({ 
                         success: true, 
                         message: `Successfully executed ${serverName}`,
