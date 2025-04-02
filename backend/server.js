@@ -149,6 +149,79 @@ app.get('/health', (req, res) => {
     });
 });
 
+// Specific MCP endpoints
+app.post('/api/sequential-thinking', async (req, res) => {
+    try {
+        const result = await mcpHandlers['server-sequential-thinking'](req.body);
+        res.json({ success: true, result });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.post('/api/perplexity-research', async (req, res) => {
+    try {
+        const result = await mcpHandlers['perplexity-deep-research'](req.body);
+        res.json({ success: true, result });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.post('/api/github', async (req, res) => {
+    try {
+        const result = await mcpHandlers['github'](req.body);
+        res.json({ success: true, result });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.post('/api/claude-code', async (req, res) => {
+    try {
+        const result = await mcpHandlers['claude-code-mcp'](req.body);
+        res.json({ success: true, result });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.post('/api/n8n-workflow', async (req, res) => {
+    try {
+        const result = await mcpHandlers['n8n-workflow-builder'](req.body);
+        res.json({ success: true, result });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.post('/api/fetch', async (req, res) => {
+    try {
+        const result = await mcpHandlers['fetch-mcp'](req.body);
+        res.json({ success: true, result });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.post('/api/smart-thinking', async (req, res) => {
+    try {
+        const result = await mcpHandlers['smart-thinking'](req.body);
+        res.json({ success: true, result });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.post('/api/react', async (req, res) => {
+    try {
+        const result = await mcpHandlers['react-mcp'](req.body);
+        res.json({ success: true, result });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // MCP API endpoints
 app.post('/api/process', async (req, res) => {
     try {
