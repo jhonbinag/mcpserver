@@ -89,19 +89,6 @@
         "--config",
         "{}"
       ]
-    },
-    "playwright-mcp": {
-      "command": "cmd",
-      "args": [
-        "/c",
-        "npx",
-        "-y",
-        "@smithery/cli@latest",
-        "run",
-        "@Ashish-Bansal/playwright-mcp",
-        "--config",
-        "{}"
-      ]
     }
   }
 }
