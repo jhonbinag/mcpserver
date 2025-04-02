@@ -43,6 +43,9 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// Store active conversations
+const activeConversations = new Map();
+
 // MCP Command Handlers
 const mcpHandlers = {
     'server-sequential-thinking': async (data) => {
@@ -95,6 +98,116 @@ const mcpHandlers = {
     }
 };
 
+// Conversation Router - Selects the best MCP based on conversation context
+const routeConversation = async (conversationId, message, context = {}) => {
+    // Get or create conversation state
+    let conversation = activeConversations.get(conversationId);
+    
+    if (!conversation) {
+        // New conversation, initialize with default values
+        conversation = {
+            id: conversationId,
+            messages: [],
+            activeMcp: null,
+            context: context
+        };
+        activeConversations.set(conversationId, conversation);
+    }
+    
+    // Add message to conversation history
+    conversation.messages.push({
+        role: 'user',
+        content: message,
+        timestamp: new Date().toISOString()
+    });
+    
+    // Determine which MCP to use based on conversation context
+    let mcpToUse = conversation.activeMcp;
+    
+    if (!mcpToUse) {
+        // Select MCP based on message content/context
+        mcpToUse = selectMcpForMessage(message, context);
+        conversation.activeMcp = mcpToUse;
+    }
+    
+    // Execute the selected MCP
+    try {
+        const result = await mcpHandlers[mcpToUse]({
+            conversation: conversation.messages,
+            message,
+            context
+        });
+        
+        // Add response to conversation history
+        conversation.messages.push({
+            role: 'assistant',
+            content: result.output,
+            timestamp: new Date().toISOString(),
+            mcp: mcpToUse
+        });
+        
+        return {
+            success: true,
+            message: `Response from ${mcpToUse}`,
+            result: result.output,
+            conversationId,
+            mcpUsed: mcpToUse
+        };
+    } catch (error) {
+        console.error(`Error executing MCP ${mcpToUse}:`, error);
+        return {
+            success: false,
+            message: `Failed to get response from ${mcpToUse}`,
+            error: error.message,
+            conversationId
+        };
+    }
+};
+
+// Select the most appropriate MCP based on message content
+const selectMcpForMessage = (message, context) => {
+    const messageLower = message.toLowerCase();
+    
+    // Pattern matching to select the right MCP
+    if (messageLower.includes('code') || messageLower.includes('programming') || 
+        messageLower.includes('function') || context.domain === 'code') {
+        return 'claude-code-mcp';
+    }
+    
+    if (messageLower.includes('github') || messageLower.includes('repository') || 
+        messageLower.includes('commit') || context.domain === 'github') {
+        return 'github';
+    }
+    
+    if (messageLower.includes('research') || messageLower.includes('analyze') || 
+        messageLower.includes('find information') || context.domain === 'research') {
+        return 'perplexity-deep-research';
+    }
+    
+    if (messageLower.includes('workflow') || messageLower.includes('automation') || 
+        messageLower.includes('process') || context.domain === 'workflow') {
+        return 'n8n-workflow-builder';
+    }
+    
+    if (messageLower.includes('fetch') || messageLower.includes('get data') || 
+        messageLower.includes('api') || context.domain === 'data') {
+        return 'fetch-mcp';
+    }
+    
+    if (messageLower.includes('react') || messageLower.includes('component') || 
+        messageLower.includes('frontend') || context.domain === 'react') {
+        return 'react-mcp';
+    }
+    
+    if (messageLower.includes('think') || messageLower.includes('reasoning') || 
+        messageLower.includes('logic') || context.domain === 'thinking') {
+        return 'smart-thinking';
+    }
+    
+    // Default to sequential thinking for general questions
+    return 'server-sequential-thinking';
+};
+
 // Function to execute MCP command
 const executeMCPCommand = (serverName, data) => {
     return new Promise((resolve, reject) => {
@@ -145,8 +258,42 @@ app.get('/health', (req, res) => {
         status: 'healthy', 
         timestamp: new Date().toISOString(),
         domain: 'ammcpserver.vercel.app',
-        availableMCPs: Object.keys(mcpConfig.mcpServers)
+        availableMCPs: Object.keys(mcpConfig.mcpServers),
+        activeConversations: activeConversations.size
     });
+});
+
+// Conversation API endpoint
+app.post('/api/conversation', async (req, res) => {
+    try {
+        const { conversationId, message, context } = req.body;
+        
+        if (!message) {
+            return res.status(400).json({
+                success: false,
+                message: 'Message is required',
+                domain: 'ammcpserver.vercel.app'
+            });
+        }
+        
+        // Generate a random conversation ID if not provided
+        const convId = conversationId || `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
+        const result = await routeConversation(convId, message, context);
+        
+        res.json({
+            ...result,
+            domain: 'ammcpserver.vercel.app'
+        });
+    } catch (error) {
+        console.error('Conversation error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message,
+            domain: 'ammcpserver.vercel.app'
+        });
+    }
 });
 
 // Specific MCP endpoints
