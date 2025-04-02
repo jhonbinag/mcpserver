@@ -1,0 +1,107 @@
+{
+  "mcpServers": {
+    "server-sequential-thinking": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@smithery-ai/server-sequential-thinking",
+        "--key",
+        "90320e7d-56ee-4748-8b2d-cc2b44ee9c8d"
+      ]
+    },
+    "perplexity-deep-research": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@arjunkmrm/perplexity-deep-research",
+        "--key",
+        "90320e7d-56ee-4748-8b2d-cc2b44ee9c8d"
+      ]
+    },
+    "github": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@smithery-ai/github",
+        "--key",
+        "90320e7d-56ee-4748-8b2d-cc2b44ee9c8d"
+      ]
+    },
+    "claude-code-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@auchenberg/claude-code-mcp",
+        "--config",
+        "{}"
+      ]
+    },
+    "n8n-workflow-builder": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@Jimmy974/n8n-workflow-builder",
+        "--key",
+        "90320e7d-56ee-4748-8b2d-cc2b44ee9c8d"
+      ]
+    },
+    "fetch-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@goswamig/fetch-mcp",
+        "--key",
+        "90320e7d-56ee-4748-8b2d-cc2b44ee9c8d"
+      ]
+    },
+    "smart-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@Leghis/smart-thinking",
+        "--key",
+        "90320e7d-56ee-4748-8b2d-cc2b44ee9c8d"
+      ]
+    },
+    "react-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@Streen9/react-mcp",
+        "--config",
+        "{}"
+      ]
+    },
+    "playwright-mcp": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@Ashish-Bansal/playwright-mcp",
+        "--config",
+        "{}"
+      ]
+    }
+  }
+}
