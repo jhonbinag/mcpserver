@@ -25,6 +25,7 @@ import {
   FormLabel,
   Textarea,
   useToast,
+  Select,
 } from '@chakra-ui/react';
 import { useAuth } from '../components/AuthContext';
 import Layout from '../components/Layout';
@@ -72,6 +73,13 @@ export default function Dashboard() {
     }
   }, [isAuthenticated, loading, router]);
 
+  // Handle server selection from URL query params
+  useEffect(() => {
+    if (router.query.server) {
+      setActiveServer(router.query.server);
+    }
+  }, [router.query]);
+
   // Fetch MCP servers
   useEffect(() => {
     const fetchMcpServers = async () => {
@@ -79,7 +87,7 @@ export default function Dashboard() {
         const { data } = await getMcpServers();
         if (data.success) {
           setMcpServers(data.servers);
-          if (data.servers.length > 0) {
+          if (!activeServer && data.servers.length > 0) {
             setActiveServer(data.servers[0]);
           }
         }
@@ -91,7 +99,7 @@ export default function Dashboard() {
     if (isAuthenticated) {
       fetchMcpServers();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, activeServer]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -158,190 +166,194 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <Heading mb={6}>Dashboard</Heading>
-      
-      <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6} mb={8}>
-        <Stat
-          px={{ base: 4, md: 8 }}
-          py="5"
-          shadow="md"
-          border="1px solid"
-          borderColor="gray.200"
-          rounded="lg"
-          bg="white"
-        >
-          <StatLabel fontWeight="medium">Available MCP Servers</StatLabel>
-          <StatNumber>{mcpServers.length}</StatNumber>
-          <StatHelpText>Ready to process requests</StatHelpText>
-        </Stat>
+      <Box>
+        <Heading mb={6}>Dashboard</Heading>
         
-        <Stat
-          px={{ base: 4, md: 8 }}
-          py="5"
-          shadow="md"
-          border="1px solid"
-          borderColor="gray.200"
-          rounded="lg"
-          bg="white"
-        >
-          <StatLabel fontWeight="medium">Conversations</StatLabel>
-          <StatNumber>{conversations.length}</StatNumber>
-          <StatHelpText>Total messages processed</StatHelpText>
-        </Stat>
+        <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6} mb={8}>
+          <Stat
+            px={{ base: 4, md: 8 }}
+            py="5"
+            shadow="md"
+            border="1px solid"
+            borderColor="gray.200"
+            rounded="lg"
+            bg="white"
+          >
+            <StatLabel fontWeight="medium">Available MCP Servers</StatLabel>
+            <StatNumber>{mcpServers.length}</StatNumber>
+            <StatHelpText>Ready to process requests</StatHelpText>
+          </Stat>
+          
+          <Stat
+            px={{ base: 4, md: 8 }}
+            py="5"
+            shadow="md"
+            border="1px solid"
+            borderColor="gray.200"
+            rounded="lg"
+            bg="white"
+          >
+            <StatLabel fontWeight="medium">Conversations</StatLabel>
+            <StatNumber>{conversations.length}</StatNumber>
+            <StatHelpText>Total messages processed</StatHelpText>
+          </Stat>
+          
+          <Stat
+            px={{ base: 4, md: 8 }}
+            py="5"
+            shadow="md"
+            border="1px solid"
+            borderColor="gray.200"
+            rounded="lg"
+            bg="white"
+          >
+            <StatLabel fontWeight="medium">Active Server</StatLabel>
+            <Text fontWeight="bold" fontSize="lg" color="brand.500">
+              {activeServer ? formatServerName(activeServer) : 'None selected'}
+            </Text>
+            <StatHelpText>Currently active MCP</StatHelpText>
+          </Stat>
+        </SimpleGrid>
         
-        <Stat
-          px={{ base: 4, md: 8 }}
-          py="5"
-          shadow="md"
-          border="1px solid"
-          borderColor="gray.200"
-          rounded="lg"
-          bg="white"
-        >
-          <StatLabel fontWeight="medium">Active Server</StatLabel>
-          <Text fontWeight="bold" fontSize="lg" color="brand.500">
-            {activeServer || 'None selected'}
-          </Text>
-          <StatHelpText>Currently active MCP</StatHelpText>
-        </Stat>
-      </SimpleGrid>
-      
-      <Tabs variant="enclosed" colorScheme="blue">
-        <TabList mb="1em">
-          <Tab>MCP Chat</Tab>
-          <Tab>Server List</Tab>
-        </TabList>
-        
-        <TabPanels>
-          <TabPanel>
-            <Card mb={6}>
-              <CardHeader bg="gray.50" borderBottom="1px solid" borderColor="gray.200">
-                <Heading size="md">Chat with MCP Server</Heading>
-              </CardHeader>
-              <CardBody>
-                <Box mb={4}>
-                  <FormControl mb={4}>
-                    <FormLabel>Select MCP Server</FormLabel>
-                    <select 
-                      value={activeServer} 
-                      onChange={(e) => setActiveServer(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '8px',
-                        borderRadius: '5px',
-                        border: '1px solid #E2E8F0'
-                      }}
-                    >
-                      {mcpServers.map(server => (
-                        <option key={server} value={server}>{server}</option>
-                      ))}
-                    </select>
-                  </FormControl>
-                </Box>
-                
-                <Box 
-                  mb={4} 
-                  h="300px" 
-                  overflowY="auto" 
-                  p={4} 
-                  border="1px solid" 
-                  borderColor="gray.200"
-                  borderRadius="md"
+        <Card mb={6} shadow="md">
+          <CardHeader bg="gray.50" borderBottom="1px solid" borderColor="gray.200">
+            <Heading size="md">Chat with MCP Server</Heading>
+          </CardHeader>
+          <CardBody>
+            <Box mb={4}>
+              <FormControl mb={4}>
+                <FormLabel>Select MCP Server</FormLabel>
+                <Select 
+                  value={activeServer} 
+                  onChange={(e) => setActiveServer(e.target.value)}
                 >
-                  {conversations.length > 0 ? (
-                    conversations.map(msg => (
-                      <Box key={msg.id} mb={4}>
-                        <Flex justify="flex-end">
-                          <Box 
-                            bg="brand.500" 
-                            color="white" 
-                            p={3} 
-                            borderRadius="lg" 
-                            maxW="80%"
-                          >
-                            <Text>{msg.text}</Text>
-                            <Text fontSize="xs" textAlign="right" mt={1}>
+                  {mcpServers.map(server => (
+                    <option key={server} value={server}>
+                      {formatServerName(server)}
+                    </option>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+            
+            <Box 
+              mb={4} 
+              h="300px" 
+              overflowY="auto" 
+              p={4} 
+              border="1px solid" 
+              borderColor="gray.200"
+              borderRadius="md"
+            >
+              {conversations.length > 0 ? (
+                conversations.map(msg => (
+                  <Box key={msg.id} mb={4}>
+                    <Flex justify="flex-end">
+                      <Box 
+                        bg="brand.500" 
+                        color="white" 
+                        p={3} 
+                        borderRadius="lg" 
+                        maxW="80%"
+                      >
+                        <Text>{msg.text}</Text>
+                        <Text fontSize="xs" textAlign="right" mt={1}>
+                          {new Date(msg.timestamp).toLocaleTimeString()}
+                        </Text>
+                      </Box>
+                    </Flex>
+                    
+                    {msg.response && (
+                      <Flex mt={2}>
+                        <Box 
+                          bg="gray.100" 
+                          p={3} 
+                          borderRadius="lg" 
+                          maxW="80%"
+                        >
+                          <Text>{msg.response}</Text>
+                          <Flex justify="space-between" mt={1}>
+                            <Badge colorScheme="blue">{formatServerName(msg.server)}</Badge>
+                            <Text fontSize="xs">
                               {new Date(msg.timestamp).toLocaleTimeString()}
                             </Text>
-                          </Box>
-                        </Flex>
-                        
-                        {msg.response && (
-                          <Flex mt={2}>
-                            <Box 
-                              bg="gray.100" 
-                              p={3} 
-                              borderRadius="lg" 
-                              maxW="80%"
-                            >
-                              <Text>{msg.response}</Text>
-                              <Flex justify="space-between" mt={1}>
-                                <Badge colorScheme="blue">{msg.server}</Badge>
-                                <Text fontSize="xs">
-                                  {new Date(msg.timestamp).toLocaleTimeString()}
-                                </Text>
-                              </Flex>
-                            </Box>
                           </Flex>
-                        )}
-                      </Box>
-                    ))
-                  ) : (
-                    <Text color="gray.500" textAlign="center">
-                      No messages yet. Start a conversation!
-                    </Text>
-                  )}
-                </Box>
-                
-                <form onSubmit={handleSendMessage}>
-                  <Flex>
-                    <Textarea
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      placeholder={`Ask something to ${activeServer}...`}
-                      mr={2}
-                    />
-                    <Button
-                      type="submit"
-                      colorScheme="blue"
-                      isLoading={isLoading}
-                      alignSelf="flex-end"
-                    >
-                      Send
-                    </Button>
-                  </Flex>
-                </form>
-              </CardBody>
-            </Card>
-          </TabPanel>
-          
-          <TabPanel>
-            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
+                        </Box>
+                      </Flex>
+                    )}
+                  </Box>
+                ))
+              ) : (
+                <Text color="gray.500" textAlign="center">
+                  No messages yet. Start a conversation!
+                </Text>
+              )}
+            </Box>
+            
+            <form onSubmit={handleSendMessage}>
+              <Flex>
+                <Textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder={`Ask something to ${formatServerName(activeServer)}...`}
+                  mr={2}
+                />
+                <Button
+                  type="submit"
+                  colorScheme="blue"
+                  isLoading={isLoading}
+                  alignSelf="flex-end"
+                >
+                  Send
+                </Button>
+              </Flex>
+            </form>
+          </CardBody>
+        </Card>
+        
+        <Card shadow="md">
+          <CardHeader bg="gray.50" borderBottom="1px solid" borderColor="gray.200">
+            <Heading size="md">Available MCP Servers</Heading>
+          </CardHeader>
+          <CardBody>
+            <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4}>
               {mcpServers.map(server => (
-                <Card key={server}>
-                  <CardHeader bg="gray.50" borderBottom="1px solid" borderColor="gray.200">
-                    <Heading size="md">{server}</Heading>
-                  </CardHeader>
+                <Card key={server} variant="outline">
                   <CardBody>
-                    <Text mb={4}>
+                    <Heading size="sm" mb={2}>{formatServerName(server)}</Heading>
+                    <Text fontSize="sm" mb={3}>
                       {getServerDescription(server)}
                     </Text>
                     <Button
                       size="sm"
-                      colorScheme="blue"
+                      colorScheme={activeServer === server ? "blue" : "gray"}
+                      variant={activeServer === server ? "solid" : "outline"}
                       onClick={() => setActiveServer(server)}
+                      width="full"
                     >
-                      Select
+                      {activeServer === server ? 'Selected' : 'Select'}
                     </Button>
                   </CardBody>
                 </Card>
               ))}
             </SimpleGrid>
-          </TabPanel>
-        </TabPanels>
-      </Tabs>
+          </CardBody>
+        </Card>
+      </Box>
     </Layout>
   );
+}
+
+// Helper function to format server names for display
+function formatServerName(server) {
+  if (!server) return '';
+  
+  return server
+    .replace('server-', '')
+    .replace('-mcp', '')
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 }
 
 // Helper function to get server descriptions
