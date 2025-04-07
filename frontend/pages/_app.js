@@ -1,10 +1,9 @@
 import { ChakraProvider, extendTheme } from '@chakra-ui/react';
-import { AuthProvider } from '../components/AuthContext';
+import { AuthProvider, useAuth } from '../components/AuthContext';
 import '../styles/globals.css';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import { Box, Text } from '@chakra-ui/react';
-import { useAuth } from '../contexts/AuthContext';
 
 // Extend the theme to include custom colors, fonts, etc
 const theme = extendTheme({
