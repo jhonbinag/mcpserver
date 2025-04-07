@@ -34,8 +34,34 @@ const FeatureIcon = (props) => {
 };
 
 export default function Home() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.push('/login');
+    }
+  }, [isAuthenticated, loading, router]);
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <Layout>
+        <Container maxW={'5xl'}>
+          <Box textAlign="center" py={20}>
+            <Text>Loading...</Text>
+          </Box>
+        </Container>
+      </Layout>
+    );
+  }
+
+  // If authenticated, show the dashboard
+  if (isAuthenticated) {
+    router.push('/dashboard');
+    return null;
+  }
 
   return (
     <Layout>
@@ -72,8 +98,8 @@ export default function Home() {
               _hover={{
                 bg: 'brand.600',
               }}
-              onClick={() => router.push(isAuthenticated ? '/dashboard' : '/login')}>
-              {isAuthenticated ? 'Go to Dashboard' : 'Get Started'}
+              onClick={() => router.push('/login')}>
+              Get Started
             </Button>
           </Stack>
         </Stack>
